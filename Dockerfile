@@ -29,4 +29,4 @@ VOLUME ["/data_nginx"]
 EXPOSE 80
 
 CMD /usr/sbin/nginx -c /etc/nginx/nginx.conf &&  \
-  tail -100f /var/log/nginx/access.log
+  tail -100f /data_nginx/log/nginx/access.log
