@@ -1,0 +1,46 @@
+# You may add here your
+# server {
+#	...
+# }
+# statements for each of your virtual hosts to this file
+
+##
+# You should look at the following URL's in order to grasp a solid understanding
+# of Nginx configuration files in order to fully unleash the power of Nginx.
+# http://wiki.nginx.org/Pitfalls
+# http://wiki.nginx.org/QuickStart
+# http://wiki.nginx.org/Configuration
+#
+# Generally, you will want to move this file somewhere, and start with a clean
+# file but keep this around for reference. Or just disable in sites-enabled.
+#
+# Please see /usr/share/doc/nginx-doc/examples/ for more detailed examples.
+##
+
+upstream docker-apache2 {
+       ip_hash;
+       server docker-apache2:1111;
+}
+
+server {
+       listen 80;
+       server_name _;
+       location / {
+		set $do_not_cache 0;
+		# comment auther or login ?
+		if ($http_cookie ~* "comment_author_|wordpress_(?!test_cookie)|wp-postpass_" ) {
+		   set $do_not_cache 1;
+		}
+
+		# Kei-tai ?
+		if ($http_user_agent ~* "2.0\ 2MMP|240320|400X240|AvantGo|BlackBerry|Blazer|Cellphone|Danger|DoCoMo|Elaine/3.0|EudoraWeb|Googlebot-Mobile|hiptop|IEMobile|KYOCERA/WX310K|LG/U990|MIDP-2.|MMEF20|MOT-V|NetFront|Newt|Nintendo\ Wii|Nitro|Nokia|Opera\ Mini|Palm|PlayStation\ Portable|portalmmm|Proxinet|ProxiNet|SHARP-TQ-GX10|SHG-i900|Small|SonyEricsson|Symbian\ OS|SymbianOS|TS21i-10|UP.Browser|UP.Link|webOS|Windows\ CE|WinWAP|YahooSeeker/M1A1-R2D2|iPhone|iPod|Android|BlackBerry9530|LG-TU915\ Obigo|LGE\ VX|webOS|Nokia5800" ) {
+		   set $do_not_cache 1;
+		}
+
+		proxy_no_cache $do_not_cache;
+		proxy_cache_bypass $do_not_cache;
+		proxy_pass http://docker-apache2/;
+		proxy_cache_key $scheme://$host$request_uri$is_args$args;
+		proxy_cache cache_mysite;
+	}
+}
