@@ -1,32 +1,15 @@
-FROM ubuntu:14.04.2
+FROM nginx:alpine
 
-MAINTAINER khiraiwa
+MAINTAINER khiraiwa <the.world.nova@gmail.com>
 
-ENV DEBIAN_FRONTEND noninteractive
-RUN ["apt-get", "update"]
-RUN ["apt-get", "install", "software-properties-common", "python-software-properties", "-y"]
-RUN ["add-apt-repository", "-y", "ppa:nginx/stable"]
-RUN ["apt-get", "update"]
-RUN ["apt-get", "install", "nginx", "-y"]
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+COPY default.conf /etc/nginx/conf.d/default.conf
+# COPY hoge /hoge
 
-RUN ["chown", "-R", "www-data:www-data", "/etc/nginx"]
-RUN ["chown", "-R", "www-data:www-data", "/var/lib/nginx"]
-RUN ["chown", "-R", "www-data:www-data", "/var/log/nginx"]
-RUN ["chown", "-R", "www-data:www-data", "/usr/sbin/nginx"]
+RUN apk --no-cache add python2 py2-pip && \
+  pip --no-cache-dir install awscli && \
+  apk --purge del py-pip && \
+  rm -rf /var/cache/apk/*
 
-ADD nginx.conf /etc/nginx/nginx.conf
-ADD proxy.conf /etc/nginx/conf.d/proxy.conf
-ADD default /etc/nginx/sites-available/default
-
-# Mount data dir
-RUN ["mkdir", "-p", "/data_nginx/log/nginx"]
-RUN ["mkdir", "-p", "/data_nginx/cache/nginx/temp"]
-RUN ["mkdir", "-p", "/data_nginx/cache/nginx/mysite"]
-
-RUN ["chown", "-R", "www-data:www-data", "/data_nginx"]
-VOLUME ["/data_nginx"]
-
-EXPOSE 80
-
-CMD /usr/sbin/nginx -c /etc/nginx/nginx.conf &&  \
-  tail -100f /data_nginx/log/nginx/access.log
+ENTRYPOINT [ "/docker-entrypoint.sh" ]
+CMD ["nginx"]
