@@ -11,5 +11,9 @@ RUN apk --no-cache add python2 py2-pip && \
   apk --purge del py-pip && \
   rm -rf /var/cache/apk/*
 
+ENV NGINX_PROXY_PASS_HOST="localhost" \
+  NGINX_PROXY_PASS_PORT="80" \
+  NGINX_PORT="80"
+
 ENTRYPOINT [ "/docker-entrypoint.sh" ]
 CMD ["nginx"]
